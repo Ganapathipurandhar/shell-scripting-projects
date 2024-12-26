@@ -1,0 +1,63 @@
+Secure Ways to Handle Sensitive Information in Scripts
+
+1. Use a Configuration File
+Store credentials in a file (config.sh) with restricted permissions (chmod 600 config.sh).
+Source the file in the script:
+source ./config.sh
+
+Example file content:
+GITHUB_USERNAME="your_username"
+GITHUB_TOKEN="your_personal_access_token"
+
+Pros: Easy to use, credentials not exposed in process listings.
+Cons: Requires careful management of file permissions.
+
+2. Prompt for Credentials
+Ask the user to enter credentials during script execution.
+Example:
+read -p "Enter GitHub username: " USERNAME
+read -s -p "Enter GitHub token: " TOKEN
+echo
+Pros: Credentials are not stored or exposed.
+Cons: Requires user interaction.
+
+3. Use Secrets Management Tools
+Store and retrieve credentials securely using tools like:
+AWS Secrets Manager
+HashiCorp Vault
+Azure Key Vault
+Example with AWS:
+Save secret:
+aws secretsmanager create-secret --name github-credentials --secret-string '{"username":"your_username","token":"your_token"}'
+
+Retrieve in script:
+secret=$(aws secretsmanager get-secret-value --secret-id github-credentials --query SecretString --output text)
+USERNAME=$(echo "$secret" | jq -r .username)
+TOKEN=$(echo "$secret" | jq -r .token)
+Pros: Highly secure and automated.
+Cons: Requires integration with cloud services.
+
+4. Use .netrc for Authentication
+GitHub supports .netrc files for API authentication.
+Steps:
+Create a .netrc file:
+echo -e "machine api.github.com\nlogin your_username\npassword your_personal_access_token" > ~/.netrc
+chmod 600 ~/.netrc
+Use it in the script:
+curl -s --netrc "$url"
+Pros: Convenient for GitHub API requests.
+Cons: Specific to supported tools/services.
+
+5. Scoped Environment Variables
+Pass variables only during script execution:
+GITHUB_USERNAME="your_username" GITHUB_TOKEN="your_token" ./script.sh <repo_owner> <repo_name>
+Pros: Credentials are temporary and limited to the script's scope.
+Cons: Credentials might appear in process listings.
+
+
+
+Recommendations
+Automated Workflows: Use a secrets manager (e.g., AWS Secrets Manager, Vault).
+Manual Workflows: Use the prompt method to avoid storing credentials.
+Convenience and Security: Combine .netrc or configuration files with restricted permissions.
+Avoid passing credentials as inline variables or arguments unless no other options are feasible.

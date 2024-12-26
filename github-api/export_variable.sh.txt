@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Source the configuration file
+source ./config.sh
+
+# Check if variables are set
+if [[ -z "$GITHUB_USERNAME" || -z "$GITHUB_TOKEN" ]]; then
+    echo "Error: Credentials not set. Please check the config.sh file."
+    exit 1
+fi
+
+# Rest of the script...
